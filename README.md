@@ -6,7 +6,7 @@ Implement workers for external tasks in [Camunda BPM](http://camunda.org) in Jav
 
 ## Summary
 
-This tool provides a JavaScript interface to external tasks exposed by the process engine.
+This tool provides a Java interface to external tasks exposed by the process engine.
 
 ## Getting started
 
