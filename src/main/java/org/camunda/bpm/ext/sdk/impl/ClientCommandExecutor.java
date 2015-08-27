@@ -14,6 +14,7 @@ package org.camunda.bpm.ext.sdk.impl;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,24 +28,26 @@ public class ClientCommandExecutor {
   protected ObjectMapper objectMapper;
   protected String endpointUrl;
   protected String clientId;
+  protected ValueSerializers valueSerializers;
 
-  public ClientCommandExecutor(HttpClient client, String endpointUrl, String clientId, ObjectMapper objectMapper) {
+  public ClientCommandExecutor(HttpClient client, String endpointUrl, String clientId, ObjectMapper objectMapper, ValueSerializers valueSerializers) {
     this.httpClient = client;
     this.endpointUrl = endpointUrl;
     this.clientId = clientId;
     this.objectMapper = objectMapper;
+    this.valueSerializers = valueSerializers;
   }
 
   public <T> T executePost(String url, ClientPostComand<T> cmd) {
     HttpPost httpPost = new HttpPost(sanitizeUrl(endpointUrl, url));
     httpPost.addHeader("Content-Type", "application/json");
-    ClientCommandContext clientCommandContext = new ClientCommandContext(httpClient, objectMapper, clientId);
+    ClientCommandContext clientCommandContext = new ClientCommandContext(httpClient, objectMapper, clientId, valueSerializers);
     return cmd.execute(clientCommandContext, httpPost);
   }
 
   public <T> T executePostMultipart(String url, ClientPostMultipartComand<T> cmd) {
     HttpPost httpPost = new HttpPost(sanitizeUrl(endpointUrl, url));
-    ClientCommandContext clientCommandContext = new ClientCommandContext(httpClient, objectMapper, clientId);
+    ClientCommandContext clientCommandContext = new ClientCommandContext(httpClient, objectMapper, clientId, valueSerializers);
     return cmd.execute(clientCommandContext, httpPost);
   }
 
@@ -57,5 +60,16 @@ public class ClientCommandExecutor {
     }
 
     return baseUrl + "/" + relativeUrl;
+  }
+
+  public ValueSerializers getValueSerializers() {
+    return valueSerializers;
+  }
+
+  /**
+   * @return the objectMapper
+   */
+  public ObjectMapper getObjectMapper() {
+    return objectMapper;
   }
 }

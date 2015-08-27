@@ -108,6 +108,7 @@ public class PollTasksRunnable implements Runnable {
         int tasksAcquired = 0;
 
         for (LockedTaskDto lockedTaskDto : lockedTasksResponseDto.getTasks()) {
+
           WorkerTask task = WorkerTask.from(lockedTaskDto, commandExecutor, workerMap.get(lockedTaskDto.getTopicName()));
           workerManager.execute(task);
           tasksAcquired++;

@@ -10,36 +10,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.bpm.ext.sdk.impl.dto;
+package org.camunda.bpm.ext.sdk.impl.variables;
 
-import java.util.Map;
+import org.camunda.bpm.engine.impl.core.variable.value.UntypedValueImpl;
+import org.camunda.bpm.engine.variable.value.TypedValue;
 
-import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @author Daniel Meyer
  *
  */
-public class CompleteTaskRequestDto {
+public interface ValueSerializer<T extends TypedValue> {
 
-  protected String consumerId;
+  public String getTypeName();
 
-  protected Map<String, TypedValueDto> variables;
+  public boolean canSerialize(UntypedValueImpl value);
 
-  public Map<String, TypedValueDto> getVariables() {
-    return variables;
-  }
+  public T deserializeValue(TypedValueDto object, ObjectMapper objectMapper);
 
-  public void setVariables(Map<String, TypedValueDto> variables) {
-    this.variables = variables;
-  }
+  public TypedValueDto serializeValue(T value, ObjectMapper objectMapper);
 
-  public void setConsumerId(String consumerId) {
-    this.consumerId = consumerId;
-  }
-
-  public String getConsumerId() {
-    return consumerId;
-  }
+  public TypedValue convertToTypedValue(UntypedValueImpl valueTyped);
 
 }

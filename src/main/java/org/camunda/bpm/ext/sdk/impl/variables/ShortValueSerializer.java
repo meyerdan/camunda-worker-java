@@ -10,36 +10,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.bpm.ext.sdk.impl.dto;
+package org.camunda.bpm.ext.sdk.impl.variables;
 
-import java.util.Map;
-
-import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
+import org.camunda.bpm.engine.variable.type.ValueType;
+import org.camunda.bpm.engine.variable.value.ShortValue;
 
 /**
  * @author Daniel Meyer
  *
  */
-public class CompleteTaskRequestDto {
+public class ShortValueSerializer extends AbstractPrimitiveValueSerializer<ShortValue> {
 
-  protected String consumerId;
-
-  protected Map<String, TypedValueDto> variables;
-
-  public Map<String, TypedValueDto> getVariables() {
-    return variables;
-  }
-
-  public void setVariables(Map<String, TypedValueDto> variables) {
-    this.variables = variables;
-  }
-
-  public void setConsumerId(String consumerId) {
-    this.consumerId = consumerId;
-  }
-
-  public String getConsumerId() {
-    return consumerId;
+  public ShortValueSerializer() {
+    super(ValueType.SHORT);
   }
 
 }

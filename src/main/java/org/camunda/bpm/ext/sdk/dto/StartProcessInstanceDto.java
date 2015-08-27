@@ -10,7 +10,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.bpm.ext.sdk.impl.dto;
+package org.camunda.bpm.ext.sdk.dto;
 
 import java.util.Map;
 
@@ -20,26 +20,28 @@ import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
  * @author Daniel Meyer
  *
  */
-public class CompleteTaskRequestDto {
-
-  protected String consumerId;
+public class StartProcessInstanceDto {
 
   protected Map<String, TypedValueDto> variables;
+  protected String businessKey;
+  protected String caseInstanceId;
 
   public Map<String, TypedValueDto> getVariables() {
     return variables;
   }
-
   public void setVariables(Map<String, TypedValueDto> variables) {
     this.variables = variables;
   }
-
-  public void setConsumerId(String consumerId) {
-    this.consumerId = consumerId;
+  public String getBusinessKey() {
+    return businessKey;
   }
-
-  public String getConsumerId() {
-    return consumerId;
+  public void setBusinessKey(String businessKey) {
+    this.businessKey = businessKey;
   }
-
+  public String getCaseInstanceId() {
+    return caseInstanceId;
+  }
+  public void setCaseInstanceId(String caseInstanceId) {
+    this.caseInstanceId = caseInstanceId;
+  }
 }

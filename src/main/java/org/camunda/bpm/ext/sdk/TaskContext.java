@@ -14,6 +14,9 @@ package org.camunda.bpm.ext.sdk;
 
 import java.util.Map;
 
+import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.value.TypedValue;
+
 /**
  * @author Daniel Meyer
  *
@@ -24,7 +27,9 @@ public interface TaskContext {
 
   <T> T getVariable(String name);
 
-  Map<String, Object> getVariables();
+  <T extends TypedValue> T getVariableTyped(String name);
+
+  VariableMap getVariables();
 
   void setAllVariables(Map<String, Object> variables);
 

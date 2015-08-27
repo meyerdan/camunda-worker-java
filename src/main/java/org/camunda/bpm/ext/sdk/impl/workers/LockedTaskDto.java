@@ -13,6 +13,9 @@
 package org.camunda.bpm.ext.sdk.impl.workers;
 
 import java.util.Date;
+import java.util.Map;
+
+import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
 
 /**
  * @author Daniel Meyer
@@ -34,7 +37,7 @@ public class LockedTaskDto {
 
   protected String processDefinitionId;
 
-//  protected Map<String, VariableValueDto> variables;
+  protected Map<String, TypedValueDto> variables;
 
   public String getId() {
     return id;
@@ -82,6 +85,14 @@ public class LockedTaskDto {
 
   public void setProcessInstanceId(String processInstanceId) {
     this.processInstanceId = processInstanceId;
+  }
+
+  public Map<String, TypedValueDto> getVariables() {
+    return variables;
+  }
+
+  public void setVariables(Map<String, TypedValueDto> variables) {
+    this.variables = variables;
   }
 
 

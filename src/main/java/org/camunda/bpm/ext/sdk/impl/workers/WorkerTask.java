@@ -17,6 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.client.methods.HttpPost;
+import org.camunda.bpm.engine.impl.core.variable.VariableMapImpl;
+import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.value.TypedValue;
 import org.camunda.bpm.ext.sdk.TaskContext;
 import org.camunda.bpm.ext.sdk.Worker;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
@@ -33,8 +36,8 @@ public class WorkerTask implements TaskContext, Runnable {
 
   protected String taskId;
 
-  protected Map<String, Object> retreivedVariables;
-  protected Map<String, Object> writtenVariables = new HashMap<String, Object>();
+  protected VariableMap retreivedVariables;
+  protected VariableMap writtenVariables = new VariableMapImpl();
 
 
   protected ClientCommandExecutor clientCommandExecutor;
@@ -50,7 +53,7 @@ public class WorkerTask implements TaskContext, Runnable {
 
         CompleteTaskRequestDto reqDto = new CompleteTaskRequestDto();
         reqDto.setConsumerId(ctc.getClientId());
-        reqDto.setVariables(new HashMap<String, Object>());
+        reqDto.setVariables(ctc.writeVariables(writtenVariables));
 
         post.setEntity(ctc.writeObject(reqDto));
 
@@ -87,12 +90,16 @@ public class WorkerTask implements TaskContext, Runnable {
     writtenVariables.putAll(variables);
   }
 
-  public Map<String, Object> getVariables() {
+  public VariableMap getVariables() {
     return retreivedVariables;
   }
 
   public <T> T getVariable(String name) {
     return (T) retreivedVariables.get(name);
+  }
+
+  public <T extends TypedValue> T getVariableTyped(String name) {
+    return retreivedVariables.getValueTyped(name);
   }
 
   public String getTaskId() {
@@ -108,6 +115,8 @@ public class WorkerTask implements TaskContext, Runnable {
     workerTask.taskId = lockedTaskDto.getId();
     workerTask.clientCommandExecutor = clientCommandExecutor;
     workerTask.worker = worker;
+    workerTask.retreivedVariables = clientCommandExecutor.getValueSerializers()
+        .readValues(lockedTaskDto.getVariables(), clientCommandExecutor.getObjectMapper());
     return workerTask;
   }
 

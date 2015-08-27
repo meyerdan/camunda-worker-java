@@ -1,4 +1,10 @@
+import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.ext.sdk.CamundaClient;
+import org.camunda.spin.json.SpinJsonNode;
+
+import static org.camunda.spin.plugin.variable.SpinValues.*;
+import static org.camunda.bpm.engine.variable.Variables.*;
+import static org.camunda.spin.Spin.*;
 
 /* Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +38,15 @@ public class Producer {
 
     while(true) {
 
-      client.startProcessInstanceByKey("orderProcess", null);
+      SpinJsonNode customer = JSON("{}")
+        .prop("customerId", "someCustomer")
+        .prop("age", 18);
+
+
+      client.startProcessInstanceByKey("orderProcess", Variables.createVariables()
+        .putValue("stringVar", "stringVal")
+        .putValue("customerVar", jsonValue(customer).create())
+        .putValue("object", objectValue(new CustomObject())));
 
     }
 

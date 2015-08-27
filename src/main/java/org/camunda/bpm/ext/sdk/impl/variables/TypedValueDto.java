@@ -10,36 +10,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.bpm.ext.sdk.impl.dto;
+package org.camunda.bpm.ext.sdk.impl.variables;
 
 import java.util.Map;
-
-import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
 
 /**
  * @author Daniel Meyer
  *
  */
-public class CompleteTaskRequestDto {
+public class TypedValueDto {
 
-  protected String consumerId;
+  protected String type;
+  protected Object value;
+  protected Map<String, Object> valueInfo;
 
-  protected Map<String, TypedValueDto> variables;
-
-  public Map<String, TypedValueDto> getVariables() {
-    return variables;
+  public String getType() {
+    return type;
   }
-
-  public void setVariables(Map<String, TypedValueDto> variables) {
-    this.variables = variables;
+  public void setType(String type) {
+    this.type = type;
   }
-
-  public void setConsumerId(String consumerId) {
-    this.consumerId = consumerId;
+  public Object getValue() {
+    return value;
   }
-
-  public String getConsumerId() {
-    return consumerId;
+  public void setValue(Object value) {
+    this.value = value;
+  }
+  public Map<String, Object> getValueInfo() {
+    return valueInfo;
+  }
+  public void setValueInfo(Map<String, Object> valueInfo) {
+    this.valueInfo = valueInfo;
   }
 
 }

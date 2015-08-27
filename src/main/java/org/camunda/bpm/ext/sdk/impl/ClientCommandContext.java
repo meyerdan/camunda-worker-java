@@ -16,13 +16,17 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Map;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.ext.sdk.CamundaClientException;
+import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
+import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -35,11 +39,13 @@ public class ClientCommandContext {
   protected HttpClient httpClient;
   protected ObjectMapper objectMapper;
   protected String clientId;
+  protected ValueSerializers valueSerializers;
 
-  public ClientCommandContext(HttpClient client, ObjectMapper objectMapper, String clientId) {
+  public ClientCommandContext(HttpClient client, ObjectMapper objectMapper, String clientId, ValueSerializers valueSerializers) {
     this.httpClient = client;
     this.objectMapper = objectMapper;
     this.clientId = clientId;
+    this.valueSerializers = valueSerializers;
   }
 
   public HttpClient getHttpClient() {
@@ -106,6 +112,14 @@ public class ClientCommandContext {
 
   public void setClientId(String clientId) {
     this.clientId = clientId;
+  }
+
+  public ValueSerializers getValueSerializers() {
+    return valueSerializers;
+  }
+
+  public Map<String, TypedValueDto> writeVariables(VariableMap vars) {
+    return valueSerializers.writeValues(vars, objectMapper);
   }
 
 }

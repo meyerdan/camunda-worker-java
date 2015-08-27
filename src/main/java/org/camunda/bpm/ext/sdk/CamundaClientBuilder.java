@@ -14,11 +14,13 @@ package org.camunda.bpm.ext.sdk;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
+import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
 import org.camunda.bpm.ext.sdk.impl.workers.BackoffStrategy;
 import org.camunda.bpm.ext.sdk.impl.workers.SimpleBackoffStrategy;
 import org.camunda.bpm.ext.sdk.impl.workers.WorkerManager;
@@ -42,6 +44,7 @@ public class CamundaClientBuilder {
   protected WorkerManager workerManager;
   protected ObjectMapper objectMapper;
   protected String clientId;
+  protected ValueSerializers valueSerializers;
 
   public CamundaClientBuilder() {
 
@@ -79,9 +82,16 @@ public class CamundaClientBuilder {
     initClientId();
     initBackoffStrategy();
     initObjectMapper();
+    initValueSerializers();
     initHttpClient();
     initClientCommandExecutor();
     initWorkerManager();
+  }
+
+  protected void initValueSerializers() {
+    if(valueSerializers == null) {
+      valueSerializers = new ValueSerializers();
+    }
   }
 
   protected void initBackoffStrategy() {
@@ -105,6 +115,7 @@ public class CamundaClientBuilder {
   protected void initObjectMapper() {
     if(objectMapper == null) {
       objectMapper = new ObjectMapper();
+      objectMapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss"));
       objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
   }
@@ -117,7 +128,7 @@ public class CamundaClientBuilder {
 
   protected void initClientCommandExecutor() {
     if(clientCommandExecutor == null) {
-      clientCommandExecutor = new ClientCommandExecutor(httpClient, endpointUrl, clientId, objectMapper);
+      clientCommandExecutor = new ClientCommandExecutor(httpClient, endpointUrl, clientId, objectMapper, valueSerializers);
     }
   }
 
