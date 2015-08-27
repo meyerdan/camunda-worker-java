@@ -2,7 +2,7 @@
 
 Implement workers for external tasks in [Camunda BPM](http://camunda.org) in Java.
 
-> Alternative Versions: [NodeJS](https://github.com/nikku/camunda-worker-node)
+> Alternative Versions: [NodeJS](https://github.com/nikku/camunda-worker-node),  [Akka / Scala](https://github.com/saig0/camunda-worker-akka)
 
 ## Summary
 
