@@ -37,8 +37,8 @@ public class WorkerManager {
 
   protected ThreadPoolExecutor workerThreadPool;
 
-  public WorkerManager(ClientCommandExecutor commandExecutor, int numOfWorkerThreads, int queueSize) {
-    this.pollerRunnable = new PollTasksRunnable(this, commandExecutor);
+  public WorkerManager(ClientCommandExecutor commandExecutor, int numOfWorkerThreads, int queueSize, BackoffStrategy backoffStrategy) {
+    this.pollerRunnable = new PollTasksRunnable(this, commandExecutor, backoffStrategy);
 
     workQueue = new ArrayBlockingQueue<Runnable>(queueSize);
 

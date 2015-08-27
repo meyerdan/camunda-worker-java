@@ -12,10 +12,13 @@
  */
 package org.camunda.bpm.ext.sdk.impl.workers;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.camunda.bpm.ext.sdk.Worker;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.ClientPostComand;
@@ -29,20 +32,27 @@ public class PollTasksRunnable implements Runnable {
 
   protected WorkerManager workerManager;
   protected ClientCommandExecutor commandExecutor;
+  protected BackoffStrategy backoffStrategy;
 
-  public PollTasksRunnable(WorkerManager workerManager, ClientCommandExecutor commandExecutor) {
+  public PollTasksRunnable(WorkerManager workerManager, ClientCommandExecutor commandExecutor, BackoffStrategy backoffStrategy) {
     this.workerManager = workerManager;
     this.commandExecutor = commandExecutor;
+    this.backoffStrategy = backoffStrategy;
   }
 
   public void run() {
 
     final List<WorkerRegistrationImpl> registrations = workerManager.getRegistrations();
     long pollCounter = 0;
+    final MultiPollRequestDto request = new MultiPollRequestDto();
+    final Map<String, Worker> workerMap = new HashMap<String, Worker>();
 
     while(true) {
 
-      WorkerRegistrationImpl registration = null;
+      request.clear();
+      workerMap.clear();
+
+
       synchronized (registrations) {
         int numOfRegistrations = registrations.size();
 
@@ -56,38 +66,54 @@ public class PollTasksRunnable implements Runnable {
           }
         }
 
-        int registrationIndex = (int) (pollCounter % numOfRegistrations);
-        registration = registrations.get(registrationIndex);
+        for (WorkerRegistrationImpl registration : registrations) {
+          request.topics.add(new PollInstructionDto(registration.getTopicName(),
+              registration.getLockTime(),
+              registration.getVariableNames()));
+          workerMap.put(registration.getTopicName(), registration.getWorker());
+        }
+
       }
 
-      poll(registration);
+      int tasksAcquired = poll(request, workerMap);
       pollCounter++;
+
+      if(tasksAcquired == 0) {
+        try {
+          // back-off
+          backoffStrategy.run();
+        } catch(InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+      else {
+        backoffStrategy.reset();
+      }
     }
   }
 
-  private void poll(final WorkerRegistrationImpl registration) {
-    commandExecutor.executePost("/external-task/poll", new ClientPostComand<Void>() {
+  private int poll(final MultiPollRequestDto request, final Map<String, Worker> workerMap) {
+    return commandExecutor.executePost("/external-task/multi-poll", new ClientPostComand<Integer>() {
 
-      public Void execute(ClientCommandContext ctc, HttpPost post) {
+      public Integer execute(ClientCommandContext ctc, HttpPost post) {
 
-        PollAndLockTaskRequestDto requestDto = new PollAndLockTaskRequestDto();
-        requestDto.setTopicName(registration.getTopicName());
-        requestDto.setVariableNames(registration.getVariableNames());
-        requestDto.setConsumerId(ctc.getClientId());
-        requestDto.setLockTimeInSeconds(registration.getLockTime());
-        requestDto.setMaxTasks(5);
+        request.setConsumerId(ctc.getClientId());
+        request.setMaxTasks(5);
 
-        post.setEntity(ctc.writeObject(requestDto));
+        post.setEntity(ctc.writeObject(request));
 
         HttpResponse response = ctc.execute(post);
         LockedTasksResponseDto lockedTasksResponseDto = ctc.readObject(response.getEntity(), LockedTasksResponseDto.class);
 
+        int tasksAcquired = 0;
+
         for (LockedTaskDto lockedTaskDto : lockedTasksResponseDto.getTasks()) {
-          WorkerTask task = WorkerTask.from(lockedTaskDto, commandExecutor, registration.getWorker());
+          WorkerTask task = WorkerTask.from(lockedTaskDto, commandExecutor, workerMap.get(lockedTaskDto.getTopicName()));
           workerManager.execute(task);
+          tasksAcquired++;
         }
 
-        return null;
+        return tasksAcquired;
       }
     });
   }

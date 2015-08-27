@@ -43,11 +43,6 @@ public class Consumer {
       })
       .build();
 
-//    registration.remove();
-
-
-//    client.close();
-
   }
 
 }

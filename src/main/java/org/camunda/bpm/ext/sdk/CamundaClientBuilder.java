@@ -19,6 +19,8 @@ import java.util.UUID;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
+import org.camunda.bpm.ext.sdk.impl.workers.BackoffStrategy;
+import org.camunda.bpm.ext.sdk.impl.workers.SimpleBackoffStrategy;
 import org.camunda.bpm.ext.sdk.impl.workers.WorkerManager;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -32,6 +34,7 @@ public class CamundaClientBuilder {
 
   protected int numOfWorkerThreads = 2;
   protected int queueSize = 25;
+  protected BackoffStrategy backoffStrategy;
 
   protected String endpointUrl;
   protected CloseableHttpClient httpClient;
@@ -49,10 +52,21 @@ public class CamundaClientBuilder {
     return this;
   }
 
-  public CamundaClientBuilder consumerId(String consumerId) {
-    this.clientId = consumerId;
+  public CamundaClientBuilder clientId(String clientId) {
+    this.clientId = clientId;
     return this;
   }
+
+  public CamundaClientBuilder consumerId(int numOfWorkerThreads) {
+    this.numOfWorkerThreads = numOfWorkerThreads;
+    return this;
+  }
+
+  public CamundaClientBuilder queueSize(int queueSize) {
+    this.queueSize = queueSize;
+    return this;
+  }
+
 
    // building ///////////////////////////////
 
@@ -63,10 +77,17 @@ public class CamundaClientBuilder {
 
   protected void init() {
     initClientId();
+    initBackoffStrategy();
     initObjectMapper();
     initHttpClient();
     initClientCommandExecutor();
     initWorkerManager();
+  }
+
+  protected void initBackoffStrategy() {
+    if(backoffStrategy == null) {
+      backoffStrategy = new SimpleBackoffStrategy();
+    }
   }
 
   protected void initClientId() {
@@ -90,7 +111,7 @@ public class CamundaClientBuilder {
 
   protected void initWorkerManager() {
     if(this.workerManager == null) {
-      this.workerManager = new WorkerManager(clientCommandExecutor, numOfWorkerThreads, queueSize);
+      this.workerManager = new WorkerManager(clientCommandExecutor, numOfWorkerThreads, queueSize, backoffStrategy);
     }
   }
 
