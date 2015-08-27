@@ -31,8 +31,12 @@ public class MyApp {
         public void doWork(TaskContext taskContext) {
 
           // do the work
-
+          
+          // if the work was successful, complete the task
           taskContext.complete();
+          
+          // else if the work was un-successful, fail the task
+          taskContext.failed("some error message");
 
         }
       })
