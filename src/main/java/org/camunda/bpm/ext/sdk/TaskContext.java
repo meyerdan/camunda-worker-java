@@ -20,6 +20,8 @@ import java.util.Map;
  */
 public interface TaskContext {
 
+  String getTaskId();
+
   <T> T getVariable(String name);
 
   Map<String, Object> getVariables();
@@ -31,5 +33,9 @@ public interface TaskContext {
   void complete(final Map<String, Object> variables);
 
   void complete();
+
+  void taskFailed(String errorMessage);
+
+  void taskFailed();
 
 }

@@ -21,13 +21,13 @@ import java.util.List;
 public class PollInstructionDto {
 
   protected String topicName;
-  protected int lockTime;
-  protected List<String> variables;
+  protected int lockTimeInSeconds;
+  protected List<String> variableNames;
 
   public PollInstructionDto(String topicName, int lockTime, List<String> variables) {
     this.topicName = topicName;
-    this.lockTime = lockTime;
-    this.variables = variables;
+    this.lockTimeInSeconds = lockTime;
+    this.variableNames = variables;
   }
 
   public String getTopicName() {
@@ -36,17 +36,17 @@ public class PollInstructionDto {
   public void setTopicName(String topicName) {
     this.topicName = topicName;
   }
-  public int getLockTime() {
-    return lockTime;
+  public int getLockTimeInSeconds() {
+    return lockTimeInSeconds;
   }
-  public void setLockTime(int lockTime) {
-    this.lockTime = lockTime;
+  public void setLockTimeInSeconds(int lockTime) {
+    this.lockTimeInSeconds = lockTime;
   }
-  public List<String> getVariables() {
-    return variables;
+  public List<String> getVariableNames() {
+    return variableNames;
   }
-  public void setVariables(List<String> variables) {
-    this.variables = variables;
+  public void setVariableNames(List<String> variables) {
+    this.variableNames = variables;
   }
 
 }

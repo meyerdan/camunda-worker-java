@@ -1,3 +1,5 @@
+import java.util.Date;
+
 import org.camunda.bpm.ext.sdk.CamundaClient;
 import org.camunda.bpm.ext.sdk.TaskContext;
 import org.camunda.bpm.ext.sdk.Worker;
@@ -35,9 +37,15 @@ public class Consumer {
 
         public void doWork(TaskContext taskContext) {
 
-          System.out.println("doing work "+taskContext);
 
-          taskContext.complete();
+          if(new Date().getTime() % 13 == 0) {
+            taskContext.taskFailed("Task failed");
+            System.out.println("Task failed");
+          }
+          else {
+            System.out.println("Task complete");
+            taskContext.complete();
+          }
 
         }
       })

@@ -23,6 +23,7 @@ import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.ClientPostComand;
 import org.camunda.bpm.ext.sdk.impl.dto.CompleteTaskRequestDto;
+import org.camunda.bpm.ext.sdk.impl.dto.TaskFailedRequestDto;
 
 /**
  * @author Daniel Meyer
@@ -60,6 +61,24 @@ public class WorkerTask implements TaskContext, Runnable {
     });
   }
 
+  public void taskFailed() {
+    taskFailed(null);
+  }
+
+  public void taskFailed(final String errorMessage) {
+    clientCommandExecutor.executePost("/external-task/"+taskId+"/failed", new ClientPostComand<Void>() {
+      public Void execute(ClientCommandContext ctc, HttpPost post) {
+
+        TaskFailedRequestDto reqDto = new TaskFailedRequestDto(ctc.getClientId(), errorMessage);
+        post.setEntity(ctc.writeObject(reqDto));
+
+        ctc.execute(post);
+
+        return null;
+      }
+    });
+  }
+
   public void setVariable(String name, Object value) {
     writtenVariables.put(name, value);
   }
@@ -74,6 +93,10 @@ public class WorkerTask implements TaskContext, Runnable {
 
   public <T> T getVariable(String name) {
     return (T) retreivedVariables.get(name);
+  }
+
+  public String getTaskId() {
+    return taskId;
   }
 
   public void run() {
