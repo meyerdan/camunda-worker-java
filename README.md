@@ -2,6 +2,8 @@
 
 Implement workers for external tasks in [Camunda BPM](http://camunda.org) in Java.
 
+> Alternative Versions: [NodeJS](https://github.com/nikku/camunda-worker-node)
+
 ## Summary
 
 This tool provides a JavaScript interface to external tasks exposed by the process engine.
