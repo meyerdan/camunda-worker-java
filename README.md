@@ -2,7 +2,7 @@
 
 Implement workers for external tasks in [Camunda BPM](http://camunda.org) in Java.
 
-> Alternative Versions: [NodeJS](https://github.com/nikku/camunda-worker-node)
+> Alternative Versions: [NodeJS](https://github.com/nikku/camunda-worker-node),  [Akka / Scala](https://github.com/saig0/camunda-worker-akka)
 
 ## Summary
 
@@ -31,8 +31,12 @@ public class MyApp {
         public void doWork(TaskContext taskContext) {
 
           // do the work
-
+          
+          // if the work was successful, complete the task
           taskContext.complete();
+          
+          // else if the work was un-successful, fail the task
+          taskContext.failed("some error message");
 
         }
       })
