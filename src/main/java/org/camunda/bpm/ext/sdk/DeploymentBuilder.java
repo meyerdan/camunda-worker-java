@@ -14,10 +14,12 @@ package org.camunda.bpm.ext.sdk;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.camunda.bpm.ext.sdk.dto.DeploymentDto;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.ClientPostMultipartComand;
@@ -60,13 +62,18 @@ public class DeploymentBuilder {
     return this;
   };
 
-  public void deploy() {
-    commandExecutor.executePostMultipart("/deployment/create", new ClientPostMultipartComand<Void>() {
+  public DeploymentBuilder enableDuplicateFiltering() {
+    requestBuilder.addTextBody("enable-duplicate-filtering", "true");
+    return this;
+  }
 
-      public Void execute(ClientCommandContext ctc, HttpPost post) {
+  public DeploymentDto deploy() {
+    return commandExecutor.executePostMultipart("/deployment/create", new ClientPostMultipartComand<DeploymentDto>() {
+
+      public DeploymentDto execute(ClientCommandContext ctc, HttpPost post) {
         post.setEntity(requestBuilder.build());
         HttpResponse response = ctc.execute(post);
-        return null;
+        return ctc.readObject(response.getEntity(), DeploymentDto.class);
       }
     });
   }

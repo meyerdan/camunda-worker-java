@@ -49,7 +49,18 @@ public class WorkerManager {
   }
 
   public void close() {
-
+    pollerRunnable.exit();
+    try {
+      pollerThread.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    workerThreadPool.shutdown();
+    try {
+      workerThreadPool.awaitTermination(5, TimeUnit.MINUTES);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   public void execute(Runnable task) {

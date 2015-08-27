@@ -12,8 +12,11 @@
  */
 package org.camunda.bpm.ext.sdk.impl;
 
-import org.apache.http.client.HttpClient;
+import java.io.IOException;
+
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,13 +27,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ClientCommandExecutor {
 
-  protected HttpClient httpClient;
+  protected CloseableHttpClient httpClient;
   protected ObjectMapper objectMapper;
   protected String endpointUrl;
   protected String clientId;
   protected ValueSerializers valueSerializers;
 
-  public ClientCommandExecutor(HttpClient client, String endpointUrl, String clientId, ObjectMapper objectMapper, ValueSerializers valueSerializers) {
+  public ClientCommandExecutor(CloseableHttpClient client, String endpointUrl, String clientId, ObjectMapper objectMapper, ValueSerializers valueSerializers) {
     this.httpClient = client;
     this.endpointUrl = endpointUrl;
     this.clientId = clientId;
@@ -49,6 +52,12 @@ public class ClientCommandExecutor {
     HttpPost httpPost = new HttpPost(sanitizeUrl(endpointUrl, url));
     ClientCommandContext clientCommandContext = new ClientCommandContext(httpClient, objectMapper, clientId, valueSerializers);
     return cmd.execute(clientCommandContext, httpPost);
+  }
+
+  public void executeDelete(String url) {
+    HttpDelete delete = new HttpDelete(sanitizeUrl(endpointUrl, url));
+    new ClientCommandContext(httpClient, objectMapper, clientId, valueSerializers)
+      .execute(delete);
   }
 
   private String sanitizeUrl(String baseUrl, String relativeUrl) {
@@ -71,5 +80,13 @@ public class ClientCommandExecutor {
    */
   public ObjectMapper getObjectMapper() {
     return objectMapper;
+  }
+
+  public void close() {
+    try {
+      httpClient.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }

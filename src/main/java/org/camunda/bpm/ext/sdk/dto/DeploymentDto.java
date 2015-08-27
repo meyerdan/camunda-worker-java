@@ -10,18 +10,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.bpm.ext.sdk.impl.workers;
+package org.camunda.bpm.ext.sdk.dto;
 
-/**
- * @author Daniel Meyer
- *
- */
-public interface BackoffStrategy {
+import java.util.Date;
 
-  void run() throws InterruptedException;
+public class DeploymentDto {
 
-  void reset();
+  protected String id;
+  protected String name;
+  protected Date deploymentTime;
 
-  void stopWait();
+  public DeploymentDto() {
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public Date getDeploymentTime() {
+    return deploymentTime;
+  }
 
 }

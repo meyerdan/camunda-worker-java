@@ -10,18 +10,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.camunda.bpm.ext.sdk.impl.workers;
+package org.camunda.bpm.ext.worker.test;
+
+import org.camunda.bpm.ext.sdk.TaskContext;
+import org.camunda.bpm.ext.sdk.Worker;
 
 /**
  * @author Daniel Meyer
  *
  */
-public interface BackoffStrategy {
+public class CompletingWorker implements Worker {
 
-  void run() throws InterruptedException;
-
-  void reset();
-
-  void stopWait();
+  public void doWork(TaskContext taskContext) {
+    taskContext.complete();
+  }
 
 }

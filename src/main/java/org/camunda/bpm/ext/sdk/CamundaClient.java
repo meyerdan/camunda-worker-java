@@ -71,8 +71,13 @@ public class CamundaClient {
     });
   }
 
-  public void close() {
+  public void deleteDeployment(String deploymentId, boolean cascade) {
+    commandExecutor.executeDelete("/deployment/"+deploymentId+(cascade ? "?cascade=true": ""));
+  }
 
+  public void close() {
+    workerManager.close();
+    commandExecutor.close();
   }
 
 }

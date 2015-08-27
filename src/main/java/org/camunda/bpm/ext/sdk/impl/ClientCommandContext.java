@@ -21,7 +21,7 @@ import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.ext.sdk.CamundaClientException;
@@ -70,7 +70,7 @@ public class ClientCommandContext {
     }
   }
 
-  public HttpResponse execute(HttpPost post) {
+  public HttpResponse execute(HttpRequestBase post) {
     HttpResponse response = null;
     try {
       response = httpClient.execute(post);
@@ -81,17 +81,17 @@ public class ClientCommandContext {
     int statusCode = response.getStatusLine().getStatusCode();
     if(statusCode < 200 || statusCode >= 300) {
       HttpEntity entity = response.getEntity();
+      String responseStr = "";
       try {
         InputStream content = entity.getContent();
         BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-        String responseStr = "";
         while(reader.ready()) {
           responseStr += reader.readLine();
         }
-        throw new CamundaClientException("Request "+post + " returned error: "+ response.getStatusLine()+ ": "+responseStr);
       } catch (Exception e) {
         e.printStackTrace();
       }
+      throw new CamundaClientException("Request "+post + " returned error: "+ response.getStatusLine()+ ": "+responseStr);
     }
 
     return response;

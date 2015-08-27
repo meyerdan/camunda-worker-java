@@ -39,11 +39,19 @@ public class SimpleBackoffStrategy implements BackoffStrategy {
   public void run() throws InterruptedException {
     currentWait = Math.min(maxWait, currentWait * waitIncrease);
     System.out.println("waiting for "+currentWait);
-    Thread.sleep(currentWait);
+    synchronized (this) {
+      this.wait(currentWait);
+    }
   }
 
   public void reset() {
     currentWait = minWait;
+  }
+
+  public void stopWait() {
+    synchronized (this) {
+      this.notifyAll();
+    }
   }
 
 }

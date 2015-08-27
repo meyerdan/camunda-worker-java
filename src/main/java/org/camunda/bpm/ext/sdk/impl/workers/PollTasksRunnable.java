@@ -30,6 +30,8 @@ import org.camunda.bpm.ext.sdk.impl.WorkerRegistrationImpl;
  */
 public class PollTasksRunnable implements Runnable {
 
+  protected transient boolean exit = false;
+
   protected WorkerManager workerManager;
   protected ClientCommandExecutor commandExecutor;
   protected BackoffStrategy backoffStrategy;
@@ -41,54 +43,59 @@ public class PollTasksRunnable implements Runnable {
   }
 
   public void run() {
+    while(!exit) {
+      acquire();
+    }
+  }
 
+  protected void acquire() {
     final List<WorkerRegistrationImpl> registrations = workerManager.getRegistrations();
-    long pollCounter = 0;
     final MultiPollRequestDto request = new MultiPollRequestDto();
     final Map<String, Worker> workerMap = new HashMap<String, Worker>();
 
-    while(true) {
-
-      request.clear();
-      workerMap.clear();
+    request.clear();
+    workerMap.clear();
 
 
-      synchronized (registrations) {
-        int numOfRegistrations = registrations.size();
+    synchronized (registrations) {
+      int numOfRegistrations = registrations.size();
 
-        if(numOfRegistrations == 0) {
-          try {
-            registrations.wait();
-            continue;
-          } catch (InterruptedException e) {
-            e.printStackTrace();
-            // TODO
-          }
-        }
-
-        for (WorkerRegistrationImpl registration : registrations) {
-          request.topics.add(new PollInstructionDto(registration.getTopicName(),
-              registration.getLockTime(),
-              registration.getVariableNames()));
-          workerMap.put(registration.getTopicName(), registration.getWorker());
-        }
-
-      }
-
-      int tasksAcquired = poll(request, workerMap);
-      pollCounter++;
-
-      if(tasksAcquired == 0) {
+      if(numOfRegistrations == 0) {
         try {
-          // back-off
-          backoffStrategy.run();
-        } catch(InterruptedException e) {
+          registrations.wait();
+        } catch (InterruptedException e) {
           e.printStackTrace();
+          // TODO
         }
       }
-      else {
-        backoffStrategy.reset();
+
+      for (WorkerRegistrationImpl registration : registrations) {
+        request.topics.add(new PollInstructionDto(registration.getTopicName(),
+            registration.getLockTime(),
+            registration.getVariableNames()));
+        workerMap.put(registration.getTopicName(), registration.getWorker());
       }
+
+    }
+
+    int tasksAcquired = 0;
+
+    try {
+      tasksAcquired = poll(request, workerMap);
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+
+    if(tasksAcquired == 0) {
+      try {
+        // back-off
+        backoffStrategy.run();
+      } catch(InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    else {
+      backoffStrategy.reset();
     }
   }
 
@@ -98,7 +105,7 @@ public class PollTasksRunnable implements Runnable {
       public Integer execute(ClientCommandContext ctc, HttpPost post) {
 
         request.setConsumerId(ctc.getClientId());
-        request.setMaxTasks(5);
+        request.setMaxTasks(10);
 
         post.setEntity(ctc.writeObject(request));
 
@@ -117,6 +124,16 @@ public class PollTasksRunnable implements Runnable {
         return tasksAcquired;
       }
     });
+  }
+
+  public void exit() {
+    exit = true;
+    // thread may be either waiting for a registration to open
+    synchronized (workerManager.getRegistrations()) {
+      workerManager.getRegistrations().notifyAll();
+    }
+    // or doing backoff
+    backoffStrategy.stopWait();
   }
 
 }
