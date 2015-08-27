@@ -10,6 +10,8 @@ This tool provides a JavaScript interface to external tasks exposed by the proce
 
 ## Getting started
 
+> Note: you need a [special fork of the Camunda BPM Platform](https://github.com/saig0/camunda-bpm-platform/blob/worker/README.md) to be able to use this.
+
 Example of a Java consumer
 
 ```java
