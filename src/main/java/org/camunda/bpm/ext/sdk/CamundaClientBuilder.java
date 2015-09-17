@@ -34,7 +34,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CamundaClientBuilder {
 
-  protected int numOfWorkerThreads = 2;
+  private final static ClientLogger LOG = ClientLogger.LOGGER;
+
+  protected int numOfWorkerThreads = 4;
   protected int queueSize = 25;
   protected BackoffStrategy backoffStrategy;
 
@@ -74,6 +76,7 @@ public class CamundaClientBuilder {
    // building ///////////////////////////////
 
   public CamundaClient build() {
+    LOG.initializingCamundaClient(endpointUrl);
     init();
     return new CamundaClient(this);
   }

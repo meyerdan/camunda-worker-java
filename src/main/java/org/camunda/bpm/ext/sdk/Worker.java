@@ -16,7 +16,6 @@ package org.camunda.bpm.ext.sdk;
  * @author Daniel Meyer
  *
  */
-@FunctionalInterface
 public interface Worker {
 
   public void doWork(TaskContext taskContext);

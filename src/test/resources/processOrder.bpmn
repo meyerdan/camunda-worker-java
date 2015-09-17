@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:fox="http://www.camunda.com/fox" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:signavio="http://www.signavio.com" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" id="sid-fb0b1aa0-4798-4855-89ef-d31f89637fa1" exporter="Signavio Process Editor, http://www.signavio.com" exporterVersion="6.3.1" targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL">
+<definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:fox="http://www.camunda.com/fox" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" xmlns:signavio="http://www.signavio.com" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" id="sid-fb0b1aa0-4798-4855-89ef-d31f89637fa1" exporter="Signavio Process Editor, http://www.signavio.com" exporterVersion="6.3.1" targetNamespace="http://www.omg.org/spec/BPMN/20100524/MODEL">
   <dataStore id="sid-0c324fc4-5cbf-4b95-be7b-68a99c27c2fe" isUnlimited="false" name="Inventory DB"/>
   <error id="sid-6dfcbb5e-6320-443c-b804-4e84b0c404f4" errorCode="itemsOutOfStock"/>
   <message id="sid-0fb91f4b-eff5-4ce1-ae9b-e95cdf68eb3d" name=""/>
@@ -72,10 +72,10 @@
       <outgoing>sid-CB840199-14E7-4D75-889B-6C7AD565D647</outgoing>
     </exclusiveGateway>
     <sequenceFlow id="sid-9E9F4B93-8204-4206-80BF-475F9470AA50" name="no" sourceRef="sid-0248164A-459E-4050-8D23-EF700BED9580" targetRef="sid-6BA6113B-9EE0-4A35-900D-A4EE5C43CED9">
-      <conditionExpression xsi:type="tFormalExpression" id="FormalExpression_2">${!isPaymentPerformed}</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" id="FormalExpression_2">${false}</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="sid-CB840199-14E7-4D75-889B-6C7AD565D647" name="yes" sourceRef="sid-0248164A-459E-4050-8D23-EF700BED9580" targetRef="sid-0FE364B3-F436-4FFB-919C-F0C8B3483D77">
-      <conditionExpression xsi:type="tFormalExpression" id="FormalExpression_1">${isPaymentPerformed}</conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression" id="FormalExpression_1">${true}</conditionExpression>
     </sequenceFlow>
     <sequenceFlow id="SequenceFlow_6" name="" sourceRef="sid-6BA6113B-9EE0-4A35-900D-A4EE5C43CED9" targetRef="sid-96C43AFB-8924-4C45-ADCB-3CACF30E4892"/>
     <eventBasedGateway id="sid-96C43AFB-8924-4C45-ADCB-3CACF30E4892" gatewayDirection="Diverging">
@@ -112,21 +112,20 @@
       <outgoing>sid-9BD856C0-4DB6-47E7-9425-8B1D3B38787E</outgoing>
     </intermediateThrowEvent>
     <sequenceFlow id="sid-9BD856C0-4DB6-47E7-9425-8B1D3B38787E" sourceRef="sid-0FE364B3-F436-4FFB-919C-F0C8B3483D77" targetRef="sid-95888210-337C-4C03-BC3D-2B60D69B6210"/>
-    <serviceTask id="sid-95888210-337C-4C03-BC3D-2B60D69B6210" camunda:expression="${true}" camunda:async="true" name="Adjust Inventory Data" implementation="webService">
+    <serviceTask id="sid-95888210-337C-4C03-BC3D-2B60D69B6210" camunda:type="external" camunda:topicName="adjustInventory" name="Adjust Inventory Data">
       <incoming>sid-9BD856C0-4DB6-47E7-9425-8B1D3B38787E</incoming>
       <outgoing>sid-210A1C4D-85A5-45C2-88A6-551F4807D90D</outgoing>
     </serviceTask>
     <sequenceFlow id="sid-210A1C4D-85A5-45C2-88A6-551F4807D90D" sourceRef="sid-95888210-337C-4C03-BC3D-2B60D69B6210" targetRef="sid-73454FC8-D69E-41B4-841D-E8E6870E1B04"/>
-    <serviceTask id="sid-73454FC8-D69E-41B4-841D-E8E6870E1B04" camunda:expression="${true}" name="Trigger Shipment" implementation="webService">
+    <serviceTask id="sid-73454FC8-D69E-41B4-841D-E8E6870E1B04" camunda:type="external" camunda:topicName="shipment"  name="Trigger Shipment">
       <incoming>sid-210A1C4D-85A5-45C2-88A6-551F4807D90D</incoming>
       <outgoing>sid-947F3EBE-B6CF-436E-97E5-6DE3D1E903AC</outgoing>
     </serviceTask>
     <sequenceFlow id="sid-947F3EBE-B6CF-436E-97E5-6DE3D1E903AC" sourceRef="sid-73454FC8-D69E-41B4-841D-E8E6870E1B04" targetRef="sid-AC30AB02-8A00-46BB-92DF-49B1972BF77A"/>
-    <intermediateCatchEvent id="sid-AC30AB02-8A00-46BB-92DF-49B1972BF77A" name="Shipment&#xA;performed">
+    <intermediateThrowEvent id="sid-AC30AB02-8A00-46BB-92DF-49B1972BF77A" name="Shipment&#xA;performed">
       <incoming>sid-947F3EBE-B6CF-436E-97E5-6DE3D1E903AC</incoming>
       <outgoing>SequenceFlow_4</outgoing>
-      <messageEventDefinition id="sid-cdebc2ba-e97f-4842-a3fb-5b486f184611" messageRef="Message_3"/>
-    </intermediateCatchEvent>
+    </intermediateThrowEvent>
     <sequenceFlow id="SequenceFlow_4" name="" sourceRef="sid-AC30AB02-8A00-46BB-92DF-49B1972BF77A" targetRef="EndShipped2"/>
     <endEvent id="EndShipped2" name="Order Shipped">
       <incoming>SequenceFlow_4</incoming>
@@ -148,7 +147,7 @@
     <endEvent id="EndOrderCancelled2" name="Order Cancelled">
       <incoming>SequenceFlow_5</incoming>
     </endEvent>
-    <serviceTask id="sid-382F031A-2A5F-474D-A986-A148D42F4662" camunda:expression="${processOrder.releaseOrderItemReservation()}" camunda:async="true" name="Release &#xA;Order Item Reservation" implementation="webService">
+    <serviceTask id="sid-382F031A-2A5F-474D-A986-A148D42F4662" camunda:type="external" camunda:topicName="releaseOrder" name="Release &#xA;Order Item Reservation">
       <incoming>sid-8D53F495-8722-495C-8331-DF1C34AC364B</incoming>
       <outgoing>SequenceFlow_5</outgoing>
     </serviceTask>

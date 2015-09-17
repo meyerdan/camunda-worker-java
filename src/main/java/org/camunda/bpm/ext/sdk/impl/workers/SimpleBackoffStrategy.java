@@ -12,11 +12,15 @@
  */
 package org.camunda.bpm.ext.sdk.impl.workers;
 
+import org.camunda.bpm.ext.sdk.ClientLogger;
+
 /**
  * @author Daniel Meyer
  *
  */
 public class SimpleBackoffStrategy implements BackoffStrategy {
+
+  private static ClientLogger LOG = ClientLogger.LOGGER;
 
   // config
   int waitIncrease = 2;
@@ -24,7 +28,7 @@ public class SimpleBackoffStrategy implements BackoffStrategy {
   int minWait = 1000;
 
   // state
-  int currentWait = minWait;
+  int wait = minWait;
 
   public SimpleBackoffStrategy() {
 
@@ -37,15 +41,17 @@ public class SimpleBackoffStrategy implements BackoffStrategy {
   }
 
   public void run() throws InterruptedException {
-    currentWait = Math.min(maxWait, currentWait * waitIncrease);
-    System.out.println("waiting for "+currentWait);
-    synchronized (this) {
-      this.wait(currentWait);
+    if(wait != minWait) {
+      LOG.backOff(wait);
     }
+    synchronized (this) {
+      this.wait(wait);
+    }
+    wait = Math.min(maxWait, wait * waitIncrease);
   }
 
   public void reset() {
-    currentWait = minWait;
+    wait = minWait;
   }
 
   public void stopWait() {

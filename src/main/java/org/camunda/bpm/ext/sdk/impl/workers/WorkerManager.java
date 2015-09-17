@@ -18,6 +18,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.camunda.bpm.ext.sdk.ClientLogger;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
 import org.camunda.bpm.ext.sdk.impl.WorkerRegistrationImpl;
 
@@ -26,6 +27,8 @@ import org.camunda.bpm.ext.sdk.impl.WorkerRegistrationImpl;
  *
  */
 public class WorkerManager {
+
+  private final static ClientLogger LOG = ClientLogger.LOGGER;
 
   protected Thread pollerThread;
 
@@ -76,9 +79,11 @@ public class WorkerManager {
       registrations.add(registration);
       registrations.notifyAll();
     }
+    LOG.registeredNewWorker(registration);
   }
 
   public void remove(WorkerRegistrationImpl registration) {
+    LOG.registeredNewWorker(registration);
     synchronized (registrations) {
       registrations.remove(registration);
     }

@@ -18,6 +18,8 @@ import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.camunda.bpm.ext.sdk.CamundaClientException;
+import org.camunda.bpm.ext.sdk.ClientLogger;
 import org.camunda.bpm.ext.sdk.Worker;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandExecutor;
@@ -29,6 +31,8 @@ import org.camunda.bpm.ext.sdk.impl.WorkerRegistrationImpl;
  *
  */
 public class PollTasksRunnable implements Runnable {
+
+  private final static ClientLogger LOG = ClientLogger.LOGGER;
 
   protected transient boolean exit = false;
 
@@ -83,7 +87,7 @@ public class PollTasksRunnable implements Runnable {
     try {
       tasksAcquired = poll(request, workerMap);
     } catch(Exception e) {
-      e.printStackTrace();
+      LOG.exceptionDuringPoll(e);
     }
 
     if(tasksAcquired == 0) {
@@ -109,16 +113,21 @@ public class PollTasksRunnable implements Runnable {
 
         post.setEntity(ctc.writeObject(request));
 
-        HttpResponse response = ctc.execute(post);
-        LockedTasksResponseDto lockedTasksResponseDto = ctc.readObject(response.getEntity(), LockedTasksResponseDto.class);
-
         int tasksAcquired = 0;
+        try {
+          HttpResponse response = ctc.execute(post);
+          LockedTasksResponseDto lockedTasksResponseDto = ctc.readObject(response.getEntity(), LockedTasksResponseDto.class);
 
-        for (LockedTaskDto lockedTaskDto : lockedTasksResponseDto.getTasks()) {
 
-          WorkerTask task = WorkerTask.from(lockedTaskDto, commandExecutor, workerMap.get(lockedTaskDto.getTopicName()));
-          workerManager.execute(task);
-          tasksAcquired++;
+          for (LockedTaskDto lockedTaskDto : lockedTasksResponseDto.getTasks()) {
+
+            WorkerTask task = WorkerTask.from(lockedTaskDto, commandExecutor, workerMap.get(lockedTaskDto.getTopicName()));
+            workerManager.execute(task);
+            tasksAcquired++;
+          }
+        }
+        catch(CamundaClientException e) {
+          LOG.unableToPoll(e);
         }
 
         return tasksAcquired;

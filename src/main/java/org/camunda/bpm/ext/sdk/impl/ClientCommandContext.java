@@ -22,9 +22,11 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.entity.ByteArrayEntity;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.ext.sdk.CamundaClientException;
+import org.camunda.bpm.ext.sdk.ClientLogger;
 import org.camunda.bpm.ext.sdk.impl.variables.TypedValueDto;
 import org.camunda.bpm.ext.sdk.impl.variables.ValueSerializers;
 
@@ -35,6 +37,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  */
 public class ClientCommandContext {
+
+  private final static ClientLogger LOG = ClientLogger.LOGGER;
 
   protected HttpClient httpClient;
   protected ObjectMapper objectMapper;
@@ -70,10 +74,12 @@ public class ClientCommandContext {
     }
   }
 
-  public HttpResponse execute(HttpRequestBase post) {
+  public HttpResponse execute(HttpRequestBase req) {
     HttpResponse response = null;
     try {
-      response = httpClient.execute(post);
+      response = httpClient.execute(req);
+    } catch (HttpHostConnectException e) {
+      throw new CamundaClientException("Unable to connect to host "+req.getURI().getHost() + ". Full uri="+req.getURI(), e);
     } catch (Exception e) {
       throw new CamundaClientException("Exception while executing request", e);
     }
@@ -91,7 +97,7 @@ public class ClientCommandContext {
       } catch (Exception e) {
         e.printStackTrace();
       }
-      throw new CamundaClientException("Request "+post + " returned error: "+ response.getStatusLine()+ ": "+responseStr);
+      throw new CamundaClientException("Request "+req + " returned error: "+ response.getStatusLine()+ ": "+responseStr);
     }
 
     return response;

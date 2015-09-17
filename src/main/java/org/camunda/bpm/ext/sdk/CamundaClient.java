@@ -12,10 +12,12 @@
  */
 package org.camunda.bpm.ext.sdk;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.ext.sdk.dto.StartProcessInstanceDto;
 import org.camunda.bpm.ext.sdk.dto.StartProcessInstanceResponseDto;
@@ -29,6 +31,8 @@ import org.camunda.bpm.ext.sdk.impl.workers.WorkerManager;
  *
  */
 public class CamundaClient {
+
+  private final static ClientLogger LOG = ClientLogger.LOGGER;
 
   protected ClientCommandExecutor commandExecutor;
   protected WorkerManager workerManager;
@@ -56,6 +60,16 @@ public class CamundaClient {
     return startProcessInstanceByKey(key, null, variables);
   }
 
+  public StartProcessInstanceResponseDto startProcessInstanceByKeyRaw(String key, final String rawPayload) {
+    return commandExecutor.executePost("/process-definition/key/"+key+"/start", new ClientPostComand<StartProcessInstanceResponseDto>() {
+      public StartProcessInstanceResponseDto execute(ClientCommandContext ctc, HttpPost post) {
+        post.setEntity(new StringEntity(rawPayload, Charset.defaultCharset()));
+        HttpResponse response = ctc.execute(post);
+        return ctc.readObject(response.getEntity(), StartProcessInstanceResponseDto.class);
+      }
+    });
+  }
+
   public StartProcessInstanceResponseDto startProcessInstanceByKey(String key, final String businessKey, final Map<String, Object> variables) {
     return commandExecutor.executePost("/process-definition/key/"+key+"/start", new ClientPostComand<StartProcessInstanceResponseDto>() {
       public StartProcessInstanceResponseDto execute(ClientCommandContext ctc, HttpPost post) {
@@ -76,6 +90,7 @@ public class CamundaClient {
   }
 
   public void close() {
+    LOG.closing();
     workerManager.close();
     commandExecutor.close();
   }

@@ -13,13 +13,14 @@
 package org.camunda.bpm.ext.sdk.impl.workers;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.http.client.methods.HttpPost;
 import org.camunda.bpm.engine.impl.core.variable.VariableMapImpl;
 import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.bpm.engine.variable.value.TypedValue;
+import org.camunda.bpm.ext.sdk.ClientLogger;
 import org.camunda.bpm.ext.sdk.TaskContext;
 import org.camunda.bpm.ext.sdk.Worker;
 import org.camunda.bpm.ext.sdk.impl.ClientCommandContext;
@@ -33,6 +34,8 @@ import org.camunda.bpm.ext.sdk.impl.dto.TaskFailedRequestDto;
  *
  */
 public class WorkerTask implements TaskContext, Runnable {
+
+  private static ClientLogger LOG = ClientLogger.LOGGER;
 
   protected String taskId;
 
@@ -53,7 +56,7 @@ public class WorkerTask implements TaskContext, Runnable {
 
         CompleteTaskRequestDto reqDto = new CompleteTaskRequestDto();
         reqDto.setConsumerId(ctc.getClientId());
-        reqDto.setVariables(ctc.writeVariables(writtenVariables));
+        reqDto.setVariables(ctc.writeVariables(Variables.fromMap(variables)));
 
         post.setEntity(ctc.writeObject(reqDto));
 
@@ -107,7 +110,14 @@ public class WorkerTask implements TaskContext, Runnable {
   }
 
   public void run() {
-    worker.doWork(this);
+    try {
+      worker.doWork(this);
+    }
+    catch(Exception e){
+      LOG.workerException(worker, e);
+      // automatically fail the task
+      taskFailed(e.getMessage());
+    }
   }
 
   public static WorkerTask from(LockedTaskDto lockedTaskDto, ClientCommandExecutor clientCommandExecutor, Worker worker) {
