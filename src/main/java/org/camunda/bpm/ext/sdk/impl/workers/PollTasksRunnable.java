@@ -104,6 +104,9 @@ public class PollTasksRunnable implements Runnable {
   }
 
   private int poll(final MultiPollRequestDto request, final Map<String, Worker> workerMap) {
+    if(workerMap.size() == 0) {
+      return 0;
+    }
     return commandExecutor.executePost("/external-task/multi-poll", new ClientPostComand<Integer>() {
 
       public Integer execute(ClientCommandContext ctc, HttpPost post) {
